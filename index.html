@@ -272,9 +272,21 @@
       return String(nom || '').trim();
     }
 
+    function getCategoriesDisponibles() {
+      const cats = Object.keys(joueursParCategorie || {});
+      return cats.sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
+    }
+
     async function chargerJoueurs() {
       try {
-        const response = await fetch(scriptURL + '?action=joueurs');
+        const response = await fetch(scriptURL + '?action=joueurs', {
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
         const data = await response.json();
 
         joueursParCategorie = data || {};
@@ -300,12 +312,21 @@
 
       select.innerHTML = '';
 
-      Object.keys(joueursParCategorie).forEach(cat => {
+      const categories = getCategoriesDisponibles();
+
+      if (categories.length === 0) {
         const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
+        option.textContent = 'Aucune catégorie disponible';
+        option.disabled = true;
         select.appendChild(option);
-      });
+      } else {
+        categories.forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat;
+          option.textContent = cat;
+          select.appendChild(option);
+        });
+      }
     }
 
     function remplirGestionJoueurs() {
@@ -317,7 +338,9 @@
       ajout.innerHTML = '';
       supp.innerHTML = '';
 
-      Object.keys(joueursParCategorie).forEach(cat => {
+      const categories = getCategoriesDisponibles();
+
+      categories.forEach(cat => {
         const optAjout = document.createElement('option');
         optAjout.value = cat;
         optAjout.textContent = cat;
@@ -356,23 +379,30 @@
 
       container.innerHTML = '';
 
-      Object.keys(joueursParCategorie).forEach(cat => {
+      const categories = getCategoriesDisponibles();
+
+      if (categories.length === 0) {
+        container.innerHTML = '<div class="note">Aucune catégorie disponible.</div>';
+        return;
+      }
+
+      categories.forEach(cat => {
         const div = document.createElement('div');
         div.className = 'categorie-item';
 
-        div.innerHTML = `
-          <label>
-            <input type="checkbox" value="${cat}" onchange="afficherJoueurs()">
-            ${cat}
-          </label>
-        `;
+        const label = document.createElement('label');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = cat;
+        checkbox.checked = true;
+        checkbox.addEventListener('change', afficherJoueurs);
 
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(' ' + cat));
+
+        div.appendChild(label);
         container.appendChild(div);
       });
-
-      // Sélectionner toutes les catégories par défaut
-      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach(cb => cb.checked = true);
     }
 
     function afficherJoueurs() {
@@ -391,54 +421,77 @@
       }
 
       selection.forEach(cat => {
-        let html = `
-          <div class="categorie-bloc">
-            <div class="categorie-titre">${cat}</div>
+        const bloc = document.createElement('div');
+        bloc.className = 'categorie-bloc';
 
-            <button class="btn-mini" type="button" onclick="cocherCategorie('${cat}', true)">Tous</button>
-            <button class="btn-mini" type="button" onclick="cocherCategorie('${cat}', false)">Aucun</button>
+        const titre = document.createElement('div');
+        titre.className = 'categorie-titre';
+        titre.textContent = cat;
+        bloc.appendChild(titre);
 
-            <hr><br>
-        `;
+        const btnTous = document.createElement('button');
+        btnTous.type = 'button';
+        btnTous.className = 'btn-mini';
+        btnTous.textContent = 'Tous';
+        btnTous.addEventListener('click', () => cocherCategorie(cat, true));
+        bloc.appendChild(btnTous);
+
+        const btnAucun = document.createElement('button');
+        btnAucun.type = 'button';
+        btnAucun.className = 'btn-mini';
+        btnAucun.textContent = 'Aucun';
+        btnAucun.addEventListener('click', () => cocherCategorie(cat, false));
+        bloc.appendChild(btnAucun);
+
+        const separateur = document.createElement('hr');
+        bloc.appendChild(separateur);
+
+        const br = document.createElement('br');
+        bloc.appendChild(br);
 
         const joueurs = joueursParCategorie[cat] || [];
 
         joueurs.forEach(joueur => {
-          html += `
-            <div class="joueur-ligne">
-              <input 
-                class="joueur-checkbox"
-                type="checkbox"
-                value="${joueur}"
-                data-cat="${cat}"
-                onchange="updateCount()">
+          const ligne = document.createElement('div');
+          ligne.className = 'joueur-ligne';
 
-              <span>${joueur}</span>
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'joueur-checkbox';
+          checkbox.value = joueur;
+          checkbox.dataset.cat = cat;
+          checkbox.addEventListener('change', updateCount);
 
-              <input
-                type="radio"
-                name="capitaine-${cat}"
-                class="capitaine"
-                value="${joueur}"
-                data-cat="${cat}">
-              <span>C</span>
-            </div>
-          `;
+          const spanNom = document.createElement('span');
+          spanNom.textContent = joueur;
+
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = `capitaine-${cat}`;
+          radio.className = 'capitaine';
+          radio.value = joueur;
+          radio.dataset.cat = cat;
+
+          const spanC = document.createElement('span');
+          spanC.textContent = 'C';
+
+          ligne.appendChild(checkbox);
+          ligne.appendChild(spanNom);
+          ligne.appendChild(radio);
+          ligne.appendChild(spanC);
+
+          bloc.appendChild(ligne);
         });
 
-        html += '</div>';
-        container.innerHTML += html;
+        container.appendChild(bloc);
       });
 
       updateCount();
     }
 
     function cocherCategorie(cat, val) {
-      document
-        .querySelectorAll('.joueur-checkbox[data-cat="' + cat + '"]')
-        .forEach(cb => {
-          cb.checked = val;
-        });
+      document.querySelectorAll('.joueur-checkbox[data-cat="' + cat + '"]')
+        .forEach(cb => cb.checked = val);
 
       updateCount();
     }
@@ -463,22 +516,24 @@
       if (!container) return;
 
       container.innerHTML = '';
-
       if (!actif) return;
 
       document.querySelectorAll('.joueur-checkbox:checked').forEach(cb => {
         const label = document.createElement('label');
-        label.innerHTML = `
-          ${cb.value}
-          <input
-            class="numero"
-            type="number"
-            min="1"
-            max="99"
-            style="width:60px"
-            data-joueur="${cb.value}"
-            data-cat="${cb.dataset.cat}">
-        `;
+
+        const text = document.createTextNode(cb.value + ' ');
+        label.appendChild(text);
+
+        const input = document.createElement('input');
+        input.className = 'numero';
+        input.type = 'number';
+        input.min = '1';
+        input.max = '99';
+        input.style.width = '60px';
+        input.dataset.joueur = cb.value;
+        input.dataset.cat = cb.dataset.cat;
+
+        label.appendChild(input);
         container.appendChild(label);
         container.appendChild(document.createElement('br'));
       });
@@ -510,7 +565,6 @@
       joueursParCategorie[categorie].push(nom);
       joueursParCategorie[categorie] = trierJoueurs(joueursParCategorie[categorie]);
 
-      // Tentative d'envoi au script si disponible
       try {
         await fetch(scriptURL, {
           method: 'POST',
@@ -551,7 +605,6 @@
       joueursParCategorie[categorie] = (joueursParCategorie[categorie] || [])
         .filter(j => j !== joueur);
 
-      // Tentative d'envoi au script si disponible
       try {
         await fetch(scriptURL, {
           method: 'POST',
@@ -620,7 +673,7 @@
         document.getElementById('message').innerHTML =
           resultat.success
             ? '<div class="success">✅ Composition envoyée</div>'
-            : '<div class="error">❌ Erreur lors de l’envoi</div>';
+            : '<div class="error">❌ Erreur lors de l'envoi</div>';
 
       } catch (e) {
         console.error(e);
