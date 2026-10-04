@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Composition ASLM V5</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#003366,#0066cc);
+    min-height:100vh;
+    padding:20px;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    background:#f5f5f5;
+    border-radius:20px;
+    padding:30px;
+}
+
+h1{
+    text-align:center;
+    color:#003366;
+    margin-bottom:30px;
+    font-size:48px;
+}
+
+.card{
+    background:#ececec;
+    border:1px solid #cfcfcf;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:25px;
+}
+
+h2{
+    color:#003366;
+    margin-bottom:15px;
+    font-size:22px;
+}
+
+select,
+input[type="text"],
+input[type="date"],
+.numero{
+    width:60px;
+    padding:4px;
+    margin-left:10px;
+    text-align:center;
+}
+    margin-bottom:10px;
+    border:1px solid #aaa;
+    border-radius:5px;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:8px;
+    background:#003366;
+    color:white;
+    cursor:pointer;
+    font-size:18px;
+}
+
+button:hover{
+    background:#0050a5;
+}
+
+.categories-select{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:10px;
+}
+
+.categorie-item{
+    background:white;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+.joueurs-container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+    gap:15px;
+}
+
+.categorie-bloc{
+    background:white;
+    border-radius:10px;
+    border:1px solid #ccc;
+    padding:15px;
+}
+
+.categorie-titre{
+    background:#003366;
+    color:white;
+    padding:8px;
+    border-radius:5px;
+    margin-bottom:10px;
+}
+
+.joueur-ligne{
+    padding:6px;
+}
+
+.btn-mini{
+    width:auto;
+    padding:5px 10px;
+    font-size:12px;
+    margin-right:5px;
+}
+
+.success{
+    padding:15px;
+    background:#d4edda;
+    color:#155724;
+    border-radius:5px;
+}
+
+.error{
+    padding:15px;
+    background:#f8d7da;
+    color:#721c24;
+    border-radius:5px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>⚽ Composition ASLM</h1>
+
+<div class="card">
+
+<h2>Informations Match</h2>
+
+<select id="categorieEquipe"></select>
+
+<input
+type="date"
+id="dateMatch">
+
+<button
+type="button"
+id="btnMaj">
+
+🔄 Synchroniser les joueurs
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Catégories disponibles</h2>
+
+<div
+id="categoriesSelect"
+class="categories-select">
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Sélection des joueurs</h2>
+
+<div
+id="joueursContainer"
+class="joueurs-container">
+</div>
+
+<br>
+
+Joueurs sélectionnés :
+<strong id="countJoueurs">0</strong>
+
+</div>
+
+<div class="card">
+
+<label>
+
+<input
+type="checkbox"
+id="gestionNumero">
+
+Attribuer des numéros
+
+</label>
+
+</div>
+
+<div
+class="card"
+id="zoneNumeros"
+style="display:none;">
+
+<h2>Numéros</h2>
+
+<div id="numerosContainer"></div>
+
+</div>
+<div class="card">
+
+<h2>➕ Ajouter un joueur</h2>
+
+<select id="categorieAjout"></select>
+
+<input
+type="text"
+id="nomAjout"
+placeholder="Nom du joueur">
+
+<button
+type="button"
+id="btnAjouter">
+
+Ajouter
+
+</button>
+
+</div>
+<div class="card">
+
+<h2>❌ Supprimer un joueur</h2>
+
+<select id="categorieSupp"></select>
+
+<select id="joueurSupp"></select>
+
+<button
+type="button"
+id="btnSupprimer">
+
+Supprimer
+
+</button>
+
+</div>
+<button
+id="btnEnvoyer">
+
+📧 Envoyer Composition
+
+</button>
+
+<br><br>
+
+<div id="message"></div>
+
+</div>
+
+<script>
+
+const scriptURL =
+'https://script.google.com/macros/s/AKfycbyZUpG1TDxHZNBw46NuEHwbyEtEAauOl__RzWuktJWx0GYkLQ_6iZbJ2Z6oMnAmaPSV/exec';
+
+let joueursParCategorie = {};
+
+async function chargerJoueurs(){
+
+    try{
+
+        const response =
+            await fetch(
+                scriptURL +
+                '?action=joueurs'
+            );
+
+        joueursParCategorie =
+    await response.json();
+
+        remplirEquipes();
+        remplirGestionJoueurs();
+afficherCategories();
+		remplirGestionJoueurs();
+        afficherCategories();
+
+        console.log(
+            joueursParCategorie
+        );
+
+    }catch(e){
+
+        console.error(e);
+
+        alert(
+            'Erreur chargement joueurs'
+        );
+
+    }
+}
+
+function remplirEquipes(){
+
+    const select =
+        document.getElementById(
+            'categorieEquipe'
+        );
+
+    select.innerHTML = '';
+
+    Object.keys(
+        joueursParCategorie
+    ).forEach(cat=>{
+
+        const option =
+            document.createElement(
+                'option'
+            );
+
+        option.value = cat;
+        option.textContent = cat;
+
+        select.appendChild(option);
+
+    });
+
+}
+function remplirGestionJoueurs(){
+
+    const ajout =
+        document.getElementById(
+            'categorieAjout'
+        );
+
+    const supp =
+        document.getElementById(
+            'categorieSupp'
+        );
+
+    if(!ajout || !supp){
+        return;
+    }
+
+    ajout.innerHTML = '';
+    supp.innerHTML = '';
+
+    Object.keys(
+        joueursParCategorie
+    ).forEach(cat => {
+
+        ajout.innerHTML +=
+        `<option>${cat}</option>`;
+
+        supp.innerHTML +=
+        `<option>${cat}</option>`;
+
+    });
+
+    chargerListeSuppression();
+}
+
+function chargerListeSuppression(){
+
+    const categorie =
+        document.getElementById(
+            'categorieSupp'
+        )?.value;
+
+    const liste =
+        document.getElementById(
+            'joueurSupp'
+        );
+
+    if(!liste) return;
+
+    liste.innerHTML = '';
+
+    (joueursParCategorie[categorie] || [])
+    .forEach(joueur=>{
+
+        liste.innerHTML +=
+        `<option>${joueur}</option>`;
+
+    });
+
+}
+``
+
+function afficherCategories(){
+
+    const container =
+        document.getElementById(
+            'categoriesSelect'
+        );
+
+    container.innerHTML = '';
+
+    Object.keys(
+        joueursParCategorie
+    ).forEach(cat=>{
+
+        const div =
+            document.createElement(
+                'div'
+            );
+
+        div.className =
+            'categorie-item';
+
+        div.innerHTML = `
+        <label>
+            <input
+              type="checkbox"
+              value="${cat}"
+              onchange="afficherJoueurs()">
+
+            ${cat}
+        </label>
+        `;
+
+        container.appendChild(div);
+
+    });
+
+}
+
+function afficherJoueurs(){
+
+    const selection =
+        [...document.querySelectorAll(
+          '#categoriesSelect input:checked'
+        )]
+        .map(x=>x.value);
+
+    const container =
+        document.getElementById(
+            'joueursContainer'
+        );
+
+    container.innerHTML='';
+
+    selection.forEach(cat=>{
+
+        let html = `
+        <div class="categorie-bloc">
+
+        <div class="categorie-titre">
+        ${cat}
+        </div>
+
+        <button
+            class="btn-mini"
+            type="button"
+            onclick="cocherCategorie('${cat}',true)">
+            Tous
+        </button>
+
+        <button
+            class="btn-mini"
+            type="button"
+            onclick="cocherCategorie('${cat}',false)">
+            Aucun
+        </button>
+
+        <hr><br>
+        `;
+
+        joueursParCategorie[cat]
+        .forEach(joueur=>{
+
+            html += `
+            <div class="joueur-ligne">
+
+            <input
+                class="joueur-checkbox"
+                type="checkbox"
+                value="${joueur}"
+                data-cat="${cat}"
+                onchange="updateCount()">
+
+            ${joueur}
+
+            <input
+                type="radio"
+                name="capitaine"
+                class="capitaine"
+                value="${joueur}">
+
+            C
+
+            </div>
+            `;
+
+        });
+
+        html += '</div>';
+
+        container.innerHTML += html;
+
+    });
+
+    updateCount();
+
+}
+
+function cocherCategorie(cat,val){
+
+    document
+    .querySelectorAll(
+      '.joueur-checkbox[data-cat="'+cat+'"]'
+    )
+    .forEach(cb=>{
+
+        cb.checked = val;
+
+    });
+
+    updateCount();
+
+}
+
+function updateCount(){
+
+    const total =
+        document.querySelectorAll(
+            '.joueur-checkbox:checked'
+        ).length;
+
+    document.getElementById(
+        'countJoueurs'
+    ).textContent = total;
+
+    updateNumeros();
+}
+
+function updateNumeros(){
+
+    const zone =
+        document.getElementById(
+            'zoneNumeros'
+        );
+
+    const actif =
+        document.getElementById(
+            'gestionNumero'
+        ).checked;
+
+    zone.style.display =
+        actif ? 'block'
+              : 'none';
+
+    const container =
+        document.getElementById(
+            'numerosContainer'
+        );
+
+    container.innerHTML='';
+
+    if(!actif)return;
+
+    document
+    .querySelectorAll(
+        '.joueur-checkbox:checked'
+    )
+    .forEach(cb=>{
+
+        container.innerHTML += `
+        <label>
+
+        ${cb.value}
+
+        <input
+  class="numero"
+  type="number"
+  min="1"
+  max="99"
+  style="width:60px"
+  data-joueur="${cb.value}">
+
+        </label><br>
+        `;
+
+    });
+
+}
+
+document
+.getElementById(
+    'gestionNumero'
+)
+.addEventListener(
+    'change',
+    updateNumeros
+);
+
+async function envoyerComposition(){
+
+    const joueurs = [];
+
+    document
+    .querySelectorAll(
+        '.joueur-checkbox:checked'
+    )
+    .forEach(cb=>{
+
+        const numeroInput =
+            document.querySelector(
+                '.numero[data-joueur="' +
+                cb.value +
+                '"]'
+            );
+
+        joueurs.push({
+
+            nom: cb.value,
+
+            categorie:
+                cb.dataset.cat,
+
+            numero:
+                numeroInput
+                ? numeroInput.value
+                : 'Non attribué',
+
+            capitaine:
+                document.querySelector(
+                    '.capitaine[value="' +
+                    cb.value +
+                    '"]'
+                )?.checked || false
+
+        });
+
+    });
+
+    if(joueurs.length===0){
+
+        alert(
+          'Sélectionnez au moins un joueur'
+        );
+
+        return;
+
+    }
+
+    const donnees = {
+
+        categorieEquipe:
+            document.getElementById(
+                'categorieEquipe'
+            ).value,
+
+        dateMatch:
+            document.getElementById(
+                'dateMatch'
+            ).value,
+
+        joueurs
+
+    };
+
+    try{
+
+        const response =
+            await fetch(
+                scriptURL,
+                {
+                    method:'POST',
+                    headers:{
+                     'Content-Type':
+                     'text/plain;charset=utf-8'
+                    },
+                    body:
+                     JSON.stringify(
+                        donnees
+                     )
+                }
+            );
+
+        const resultat =
+            await response.json();
+
+        document.getElementById(
+            'message'
+        ).innerHTML =
+
+        resultat.success
+
+        ?
+
+        '<div class="success">✅ Composition envoyée</div>'
+
+        :
+
+        '<div class="error">❌ Erreur</div>';
+
+    }catch(e){
+
+        console.error(e);
+
+        document.getElementById(
+            'message'
+        ).innerHTML =
+        '<div class="error">❌ ' +
+        e.message +
+        '</div>';
+
+    }
+
+}
+
+document
+.getElementById(
+    'btnMaj'
+)
+.addEventListener(
+    'click',
+    chargerJoueurs
+);
+
+document
+.getElementById(
+    'btnEnvoyer'
+)
+.addEventListener(
+    'click',
+    envoyerComposition
+);
+document
+.getElementById(
+    'categorieSupp'
+)
+?.addEventListener(
+    'change',
+    chargerListeSuppression
+);
+window.onload =
+chargerJoueurs;
+
+</script>
+
+</body>
+</html>
