@@ -254,8 +254,14 @@
 
   <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyZUpG1TDxHZNBw46NuEHwbyEtEAauOl__RzWuktJWx0GYkLQ_6iZbJ2Z6oMnAmaPSV/exec';
+    const categoriesFixes = ['U15A', 'U15B', 'Séniors A', 'Séniors B', 'Vétérans', 'U18'];
 
     let joueursParCategorie = {};
+
+    function getCategoriesDisponibles() {
+      const categories = new Set([...categoriesFixes, ...Object.keys(joueursParCategorie)]);
+      return [...categories];
+    }
 
     function setMessage(type, text) {
       const messageEl = document.getElementById('message');
@@ -300,7 +306,7 @@
 
       select.innerHTML = '';
 
-      Object.keys(joueursParCategorie).forEach(cat => {
+      getCategoriesDisponibles().forEach(cat => {
         const option = document.createElement('option');
         option.value = cat;
         option.textContent = cat;
@@ -317,7 +323,7 @@
       ajout.innerHTML = '';
       supp.innerHTML = '';
 
-      Object.keys(joueursParCategorie).forEach(cat => {
+      getCategoriesDisponibles().forEach(cat => {
         const optAjout = document.createElement('option');
         optAjout.value = cat;
         optAjout.textContent = cat;
@@ -356,7 +362,7 @@
 
       container.innerHTML = '';
 
-      Object.keys(joueursParCategorie).forEach(cat => {
+      getCategoriesDisponibles().forEach(cat => {
         const div = document.createElement('div');
         div.className = 'categorie-item';
 
@@ -370,7 +376,6 @@
         container.appendChild(div);
       });
 
-      // Sélectionner toutes les catégories par défaut
       const checkboxes = container.querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach(cb => cb.checked = true);
     }
@@ -510,7 +515,6 @@
       joueursParCategorie[categorie].push(nom);
       joueursParCategorie[categorie] = trierJoueurs(joueursParCategorie[categorie]);
 
-      // Tentative d'envoi au script si disponible
       try {
         await fetch(scriptURL, {
           method: 'POST',
@@ -551,7 +555,6 @@
       joueursParCategorie[categorie] = (joueursParCategorie[categorie] || [])
         .filter(j => j !== joueur);
 
-      // Tentative d'envoi au script si disponible
       try {
         await fetch(scriptURL, {
           method: 'POST',
