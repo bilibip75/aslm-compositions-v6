@@ -276,7 +276,6 @@
   <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyZUpG1TDxHZNBw46NuEHwbyEtEAauOl__RzWuktJWx0GYkLQ_6iZbJ2Z6oMnAmaPSV/exec';
 
-    // Catégories fixes
     const categoriesFixees = ['U15A', 'U15B', 'U18', 'séniors A', 'séniors B', 'vétérans'];
 
     let joueursParCategorie = {};
@@ -303,7 +302,6 @@
 
         joueursParCategorie = data || {};
 
-        // Initialiser les catégories fixes
         categoriesFixees.forEach(categorie => {
           if (!joueursParCategorie[categorie]) {
             joueursParCategorie[categorie] = [];
@@ -367,7 +365,6 @@
         container.appendChild(div);
       });
 
-      // Sélectionner toutes les catégories par défaut
       const checkboxes = container.querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach(cb => cb.checked = true);
     }
@@ -507,7 +504,6 @@
       joueursParCategorie[categorie].push(nom);
       joueursParCategorie[categorie] = trierJoueurs(joueursParCategorie[categorie]);
 
-      // Tentative d'envoi au script si disponible
       try {
         await fetch(scriptURL, {
           method: 'POST',
@@ -548,7 +544,6 @@
       joueursParCategorie[categorie] = (joueursParCategorie[categorie] || [])
         .filter(j => j !== joueur);
 
-      // Tentative d'envoi au script si disponible
       try {
         await fetch(scriptURL, {
           method: 'POST',
@@ -617,7 +612,7 @@
         document.getElementById('message').innerHTML =
           resultat.success
             ? '<div class="success">✅ Composition envoyée</div>'
-            : '<div class="error">❌ Erreur lors de l'envoi</div>';
+            : '<div class="error">❌ Erreur lors de l’envoi</div>';
 
       } catch (e) {
         console.error(e);
