@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Composition ASLM</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #003366, #0066cc);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      background: #f5f5f5;
+      border-radius: 20px;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #003366;
+      margin-bottom: 30px;
+      font-size: 48px;
+    }
+
+    .card {
+      background: #ececec;
+      border: 1px solid #cfcfcf;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      color: #003366;
+      margin-bottom: 15px;
+      font-size: 22px;
+    }
+
+    select,
+    input[type="text"],
+    input[type="date"],
+    .numero {
+      width: 60px;
+      padding: 4px;
+      margin-left: 10px;
+      text-align: center;
+      margin-bottom: 10px;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    input[type="text"] {
+      width: 220px;
+      text-align: left;
+    }
+
+    input[type="date"] {
+      width: 150px;
+      text-align: left;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #003366;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    button:hover {
+      background: #0050a5;
+    }
+
+    .categories-select {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .categorie-item {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .joueurs-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 15px;
+    }
+
+    .categorie-bloc {
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      padding: 15px;
+    }
+
+    .categorie-titre {
+      background: #003366;
+      color: white;
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .joueur-ligne {
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .joueur-ligne input[type="checkbox"],
+    .joueur-ligne input[type="radio"] {
+      margin: 0;
+    }
+
+    .btn-mini {
+      width: auto;
+      padding: 5px 10px;
+      font-size: 12px;
+      margin-right: 5px;
+      display: inline-block;
+    }
+
+    .success {
+      padding: 15px;
+      background: #d4edda;
+      color: #155724;
+      border-radius: 5px;
+    }
+
+    .error {
+      padding: 15px;
+      background: #f8d7da;
+      color: #721c24;
+      border-radius: 5px;
+    }
+
+    #message {
+      margin-top: 10px;
+    }
+
+    .zone-actions {
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>⚽ Composition ASLM</h1>
+
+    <div class="card">
+      <h2>Informations Match</h2>
+
+      <label for="categorieEquipe">Catégorie :</label>
+      <select id="categorieEquipe"></select>
+
+      <label for="dateMatch">Date :</label>
+      <input type="date" id="dateMatch">
+
+      <div class="zone-actions">
+        <button type="button" id="btnMaj">🔄 Synchroniser les joueurs</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Catégories disponibles</h2>
+      <div id="categoriesSelect" class="categories-select"></div>
+    </div>
+
+    <div class="card">
+      <h2>Sélection des joueurs</h2>
+      <div id="joueursContainer" class="joueurs-container"></div>
+
+      <br>
+
+      Joueurs sélectionnés :
+      <strong id="countJoueurs">0</strong>
+    </div>
+
+    <div class="card">
+      <label>
+        <input type="checkbox" id="gestionNumero">
+        Attribuer des numéros
+      </label>
+    </div>
+
+    <div class="card" id="zoneNumeros" style="display:none;">
+      <h2>Numéros</h2>
+      <div id="numerosContainer"></div>
+    </div>
+
+    <div class="card">
+      <h2>➕ Ajouter un joueur</h2>
+
+      <label for="categorieAjout">Catégorie :</label>
+      <select id="categorieAjout"></select>
+
+      <label for="nomAjout">Nom :</label>
+      <input type="text" id="nomAjout" placeholder="Nom du joueur">
+
+      <div class="zone-actions">
+        <button type="button" id="btnAjouter">Ajouter</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>❌ Supprimer un joueur</h2>
+
+      <label for="categorieSupp">Catégorie :</label>
+      <select id="categorieSupp"></select>
+
+      <label for="joueurSupp">Joueur :</label>
+      <select id="joueurSupp"></select>
+
+      <div class="zone-actions">
+        <button type="button" id="btnSupprimer">Supprimer</button>
+      </div>
+    </div>
+
+    <button id="btnEnvoyer">📧 Envoyer Composition</button>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyZUpG1TDxHZNBw46NuEHwbyEtEAauOl__RzWuktJWx0GYkLQ_6iZbJ2Z6oMnAmaPSV/exec';
+    const categoriesFixes = ['U15A', 'U15B', 'Séniors A', 'Séniors B', 'Vétérans', 'U18'];
+
+    let joueursParCategorie = {};
+
+    function getCategoriesDisponibles() {
+      const categories = new Set([...categoriesFixes, ...Object.keys(joueursParCategorie)]);
+      return [...categories];
+    }
+
+    function setMessage(type, text) {
+      const messageEl = document.getElementById('message');
+      messageEl.innerHTML = `<div class="${type}">${text}</div>`;
+    }
+
+    function trierJoueurs(liste) {
+      return [...liste].sort((a, b) =>
+        a.localeCompare(b, 'fr', { sensitivity: 'base' })
+      );
+    }
+
+    function normaliserNom(nom) {
+      return String(nom || '').trim();
+    }
+
+    async function chargerJoueurs() {
+      try {
+        const response = await fetch(scriptURL + '?action=joueurs');
+        const data = await response.json();
+
+        joueursParCategorie = data || {};
+
+        Object.keys(joueursParCategorie).forEach(categorie => {
+          joueursParCategorie[categorie] = trierJoueurs(joueursParCategorie[categorie] || []);
+        });
+
+        remplirEquipes();
+        remplirGestionJoueurs();
+        afficherCategories();
+        afficherJoueurs();
+        setMessage('success', '✅ Joueurs chargés avec succès.');
+      } catch (e) {
+        console.error(e);
+        setMessage('error', '❌ Erreur lors du chargement des joueurs.');
+      }
+    }
+
+    function remplirEquipes() {
+      const select = document.getElementById('categorieEquipe');
+      if (!select) return;
+
+      select.innerHTML = '';
+
+      getCategoriesDisponibles().forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+    }
+
+    function remplirGestionJoueurs() {
+      const ajout = document.getElementById('categorieAjout');
+      const supp = document.getElementById('categorieSupp');
+
+      if (!ajout || !supp) return;
+
+      ajout.innerHTML = '';
+      supp.innerHTML = '';
+
+      getCategoriesDisponibles().forEach(cat => {
+        const optAjout = document.createElement('option');
+        optAjout.value = cat;
+        optAjout.textContent = cat;
+        ajout.appendChild(optAjout);
+
+        const optSupp = document.createElement('option');
+        optSupp.value = cat;
+        optSupp.textContent = cat;
+        supp.appendChild(optSupp);
+      });
+
+      chargerListeSuppression();
+    }
+
+    function chargerListeSuppression() {
+      const categorie = document.getElementById('categorieSupp')?.value;
+      const liste = document.getElementById('joueurSupp');
+
+      if (!liste) return;
+
+      liste.innerHTML = '';
+
+      const joueurs = joueursParCategorie[categorie] || [];
+
+      joueurs.forEach(joueur => {
+        const option = document.createElement('option');
+        option.value = joueur;
+        option.textContent = joueur;
+        liste.appendChild(option);
+      });
+    }
+
+    function afficherCategories() {
+      const container = document.getElementById('categoriesSelect');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      getCategoriesDisponibles().forEach(cat => {
+        const div = document.createElement('div');
+        div.className = 'categorie-item';
+
+        div.innerHTML = `
+          <label>
+            <input type="checkbox" value="${cat}" onchange="afficherJoueurs()">
+            ${cat}
+          </label>
+        `;
+
+        container.appendChild(div);
+      });
+
+      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = true);
+    }
+
+    function afficherJoueurs() {
+      const container = document.getElementById('joueursContainer');
+      if (!container) return;
+
+      const selection = [...document.querySelectorAll('#categoriesSelect input:checked')]
+        .map(x => x.value);
+
+      container.innerHTML = '';
+
+      if (!selection.length) {
+        container.innerHTML = '<div class="note">Aucune catégorie sélectionnée.</div>';
+        updateCount();
+        return;
+      }
+
+      selection.forEach(cat => {
+        let html = `
+          <div class="categorie-bloc">
+            <div class="categorie-titre">${cat}</div>
+
+            <button class="btn-mini" type="button" onclick="cocherCategorie('${cat}', true)">Tous</button>
+            <button class="btn-mini" type="button" onclick="cocherCategorie('${cat}', false)">Aucun</button>
+
+            <hr><br>
+        `;
+
+        const joueurs = joueursParCategorie[cat] || [];
+
+        joueurs.forEach(joueur => {
+          html += `
+            <div class="joueur-ligne">
+              <input 
+                class="joueur-checkbox"
+                type="checkbox"
+                value="${joueur}"
+                data-cat="${cat}"
+                onchange="updateCount()">
+
+              <span>${joueur}</span>
+
+              <input
+                type="radio"
+                name="capitaine-${cat}"
+                class="capitaine"
+                value="${joueur}"
+                data-cat="${cat}">
+              <span>C</span>
+            </div>
+          `;
+        });
+
+        html += '</div>';
+        container.innerHTML += html;
+      });
+
+      updateCount();
+    }
+
+    function cocherCategorie(cat, val) {
+      document
+        .querySelectorAll('.joueur-checkbox[data-cat="' + cat + '"]')
+        .forEach(cb => {
+          cb.checked = val;
+        });
+
+      updateCount();
+    }
+
+    function updateCount() {
+      const total = document.querySelectorAll('.joueur-checkbox:checked').length;
+      const el = document.getElementById('countJoueurs');
+      if (el) el.textContent = total;
+
+      updateNumeros();
+    }
+
+    function updateNumeros() {
+      const zone = document.getElementById('zoneNumeros');
+      const actif = document.getElementById('gestionNumero')?.checked;
+
+      if (zone) {
+        zone.style.display = actif ? 'block' : 'none';
+      }
+
+      const container = document.getElementById('numerosContainer');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      if (!actif) return;
+
+      document.querySelectorAll('.joueur-checkbox:checked').forEach(cb => {
+        const label = document.createElement('label');
+        label.innerHTML = `
+          ${cb.value}
+          <input
+            class="numero"
+            type="number"
+            min="1"
+            max="99"
+            style="width:60px"
+            data-joueur="${cb.value}"
+            data-cat="${cb.dataset.cat}">
+        `;
+        container.appendChild(label);
+        container.appendChild(document.createElement('br'));
+      });
+    }
+
+    async function ajouterJoueur() {
+      const categorie = document.getElementById('categorieAjout')?.value;
+      const nom = normaliserNom(document.getElementById('nomAjout')?.value);
+
+      if (!categorie) {
+        setMessage('error', '❌ Aucune catégorie sélectionnée.');
+        return;
+      }
+
+      if (!nom) {
+        setMessage('error', '❌ Veuillez saisir un nom de joueur.');
+        return;
+      }
+
+      if (!joueursParCategorie[categorie]) {
+        joueursParCategorie[categorie] = [];
+      }
+
+      if (joueursParCategorie[categorie].includes(nom)) {
+        setMessage('error', '⚠️ Ce joueur existe déjà dans cette catégorie.');
+        return;
+      }
+
+      joueursParCategorie[categorie].push(nom);
+      joueursParCategorie[categorie] = trierJoueurs(joueursParCategorie[categorie]);
+
+      try {
+        await fetch(scriptURL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify({
+            action: 'ajouterJoueur',
+            categorie,
+            nom
+          })
+        });
+      } catch (e) {
+        console.warn('Ajout côté serveur non disponible ou non supporté.', e);
+      }
+
+      document.getElementById('nomAjout').value = '';
+      remplirGestionJoueurs();
+      afficherCategories();
+      afficherJoueurs();
+      setMessage('success', `✅ Joueur ajouté : ${nom}`);
+    }
+
+    async function supprimerJoueur() {
+      const categorie = document.getElementById('categorieSupp')?.value;
+      const joueur = document.getElementById('joueurSupp')?.value;
+
+      if (!categorie) {
+        setMessage('error', '❌ Aucune catégorie sélectionnée.');
+        return;
+      }
+
+      if (!joueur) {
+        setMessage('error', '❌ Aucun joueur sélectionné.');
+        return;
+      }
+
+      joueursParCategorie[categorie] = (joueursParCategorie[categorie] || [])
+        .filter(j => j !== joueur);
+
+      try {
+        await fetch(scriptURL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify({
+            action: 'supprimerJoueur',
+            categorie,
+            nom: joueur
+          })
+        });
+      } catch (e) {
+        console.warn('Suppression côté serveur non disponible ou non supporté.', e);
+      }
+
+      remplirGestionJoueurs();
+      afficherCategories();
+      afficherJoueurs();
+      setMessage('success', `✅ Joueur supprimé : ${joueur}`);
+    }
+
+    async function envoyerComposition() {
+      const joueurs = [];
+
+      document.querySelectorAll('.joueur-checkbox:checked').forEach(cb => {
+        const numeroInput = document.querySelector(
+          '.numero[data-joueur="' + cb.value + '"]'
+        );
+
+        const joueur = {
+          nom: cb.value,
+          categorie: cb.dataset.cat,
+          numero: numeroInput ? numeroInput.value : 'Non attribué',
+          capitaine:
+            document.querySelector(
+              '.capitaine[value="' + cb.value + '"][data-cat="' + cb.dataset.cat + '"]'
+            )?.checked || false
+        };
+
+        joueurs.push(joueur);
+      });
+
+      if (joueurs.length === 0) {
+        alert('Sélectionnez au moins un joueur');
+        return;
+      }
+
+      const donnees = {
+        categorieEquipe: document.getElementById('categorieEquipe').value,
+        dateMatch: document.getElementById('dateMatch').value,
+        joueurs
+      };
+
+      try {
+        const response = await fetch(scriptURL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(donnees)
+        });
+
+        const resultat = await response.json();
+
+        document.getElementById('message').innerHTML =
+          resultat.success
+            ? '<div class="success">✅ Composition envoyée</div>'
+            : '<div class="error">❌ Erreur lors de l'envoi</div>';
+
+      } catch (e) {
+        console.error(e);
+        document.getElementById('message').innerHTML =
+          '<div class="error">❌ ' + e.message + '</div>';
+      }
+    }
+
+    document.getElementById('gestionNumero')?.addEventListener('change', updateNumeros);
+
+    document.getElementById('btnMaj')?.addEventListener('click', chargerJoueurs);
+
+    document.getElementById('btnAjouter')?.addEventListener('click', ajouterJoueur);
+
+    document.getElementById('btnSupprimer')?.addEventListener('click', supprimerJoueur);
+
+    document.getElementById('btnEnvoyer')?.addEventListener('click', envoyerComposition);
+
+    document.getElementById('categorieSupp')?.addEventListener('change', chargerListeSuppression);
+
+    window.onload = chargerJoueurs;
+  </script>
+</body>
+</html>
