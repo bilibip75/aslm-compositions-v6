@@ -182,7 +182,14 @@
       <h2>Informations Match</h2>
 
       <label for="categorieEquipe">Catégorie :</label>
-      <select id="categorieEquipe"></select>
+      <select id="categorieEquipe">
+        <option value="U15A">U15A</option>
+        <option value="U15B">U15B</option>
+        <option value="U18">U18</option>
+        <option value="séniors A">séniors A</option>
+        <option value="séniors B">séniors B</option>
+        <option value="vétérans">vétérans</option>
+      </select>
 
       <label for="dateMatch">Date :</label>
       <input type="date" id="dateMatch">
@@ -255,9 +262,6 @@
   <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyZUpG1TDxHZNBw46NuEHwbyEtEAauOl__RzWuktJWx0GYkLQ_6iZbJ2Z6oMnAmaPSV/exec';
 
-    // Catégories fixes pour Informations Match uniquement
-    const categoriesFixees = ['U15A', 'U15B', 'U18', 'séniors A', 'séniors B', 'vétérans'];
-
     let joueursParCategorie = {};
 
     function setMessage(type, text) {
@@ -286,7 +290,6 @@
           joueursParCategorie[categorie] = trierJoueurs(joueursParCategorie[categorie] || []);
         });
 
-        remplirEquipes();
         remplirGestionJoueurs();
         afficherCategories();
         afficherJoueurs();
@@ -295,21 +298,6 @@
         console.error(e);
         setMessage('error', '❌ Erreur lors du chargement des joueurs.');
       }
-    }
-
-    function remplirEquipes() {
-      const select = document.getElementById('categorieEquipe');
-      if (!select) return;
-
-      select.innerHTML = '';
-
-      // Utiliser les catégories fixes pour Informations Match
-      categoriesFixees.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        select.appendChild(option);
-      });
     }
 
     function remplirGestionJoueurs() {
