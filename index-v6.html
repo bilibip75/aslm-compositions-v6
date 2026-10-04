@@ -182,14 +182,7 @@
       <h2>Informations Match</h2>
 
       <label for="categorieEquipe">Catégorie :</label>
-      <select id="categorieEquipe">
-        <option value="U15A">U15A</option>
-        <option value="U15B">U15B</option>
-        <option value="U18">U18</option>
-        <option value="séniors A">séniors A</option>
-        <option value="séniors B">séniors B</option>
-        <option value="vétérans">vétérans</option>
-      </select>
+      <select id="categorieEquipe"></select>
 
       <label for="dateMatch">Date :</label>
       <input type="date" id="dateMatch">
@@ -230,14 +223,7 @@
       <h2>➕ Ajouter un joueur</h2>
 
       <label for="categorieAjout">Catégorie :</label>
-      <select id="categorieAjout">
-        <option value="U15A">U15A</option>
-        <option value="U15B">U15B</option>
-        <option value="U18">U18</option>
-        <option value="séniors A">séniors A</option>
-        <option value="séniors B">séniors B</option>
-        <option value="vétérans">vétérans</option>
-      </select>
+      <select id="categorieAjout"></select>
 
       <label for="nomAjout">Nom :</label>
       <input type="text" id="nomAjout" placeholder="Nom du joueur">
@@ -251,14 +237,7 @@
       <h2>❌ Supprimer un joueur</h2>
 
       <label for="categorieSupp">Catégorie :</label>
-      <select id="categorieSupp">
-        <option value="U15A">U15A</option>
-        <option value="U15B">U15B</option>
-        <option value="U18">U18</option>
-        <option value="séniors A">séniors A</option>
-        <option value="séniors B">séniors B</option>
-        <option value="vétérans">vétérans</option>
-      </select>
+      <select id="categorieSupp"></select>
 
       <label for="joueurSupp">Joueur :</label>
       <select id="joueurSupp"></select>
@@ -275,8 +254,6 @@
 
   <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyZUpG1TDxHZNBw46NuEHwbyEtEAauOl__RzWuktJWx0GYkLQ_6iZbJ2Z6oMnAmaPSV/exec';
-
-    const categoriesFixees = ['U15A', 'U15B', 'U18', 'séniors A', 'séniors B', 'vétérans'];
 
     let joueursParCategorie = {};
 
@@ -302,16 +279,14 @@
 
         joueursParCategorie = data || {};
 
-        categoriesFixees.forEach(categorie => {
-          if (!joueursParCategorie[categorie]) {
-            joueursParCategorie[categorie] = [];
-          }
+        Object.keys(joueursParCategorie).forEach(categorie => {
           joueursParCategorie[categorie] = trierJoueurs(joueursParCategorie[categorie] || []);
         });
 
+        remplirEquipes();
+        remplirGestionJoueurs();
         afficherCategories();
         afficherJoueurs();
-        remplirGestionJoueurs();
         setMessage('success', '✅ Joueurs chargés avec succès.');
       } catch (e) {
         console.error(e);
@@ -319,10 +294,40 @@
       }
     }
 
+    function remplirEquipes() {
+      const select = document.getElementById('categorieEquipe');
+      if (!select) return;
+
+      select.innerHTML = '';
+
+      Object.keys(joueursParCategorie).forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+    }
+
     function remplirGestionJoueurs() {
+      const ajout = document.getElementById('categorieAjout');
       const supp = document.getElementById('categorieSupp');
 
-      if (!supp) return;
+      if (!ajout || !supp) return;
+
+      ajout.innerHTML = '';
+      supp.innerHTML = '';
+
+      Object.keys(joueursParCategorie).forEach(cat => {
+        const optAjout = document.createElement('option');
+        optAjout.value = cat;
+        optAjout.textContent = cat;
+        ajout.appendChild(optAjout);
+
+        const optSupp = document.createElement('option');
+        optSupp.value = cat;
+        optSupp.textContent = cat;
+        supp.appendChild(optSupp);
+      });
 
       chargerListeSuppression();
     }
@@ -351,7 +356,7 @@
 
       container.innerHTML = '';
 
-      categoriesFixees.forEach(cat => {
+      Object.keys(joueursParCategorie).forEach(cat => {
         const div = document.createElement('div');
         div.className = 'categorie-item';
 
@@ -365,6 +370,7 @@
         container.appendChild(div);
       });
 
+      // Sélectionner toutes les catégories par défaut
       const checkboxes = container.querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach(cb => cb.checked = true);
     }
@@ -504,6 +510,7 @@
       joueursParCategorie[categorie].push(nom);
       joueursParCategorie[categorie] = trierJoueurs(joueursParCategorie[categorie]);
 
+      // Tentative d'envoi au script si disponible
       try {
         await fetch(scriptURL, {
           method: 'POST',
@@ -544,6 +551,7 @@
       joueursParCategorie[categorie] = (joueursParCategorie[categorie] || [])
         .filter(j => j !== joueur);
 
+      // Tentative d'envoi au script si disponible
       try {
         await fetch(scriptURL, {
           method: 'POST',
