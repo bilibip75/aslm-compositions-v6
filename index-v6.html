@@ -255,6 +255,9 @@
   <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyZUpG1TDxHZNBw46NuEHwbyEtEAauOl__RzWuktJWx0GYkLQ_6iZbJ2Z6oMnAmaPSV/exec';
 
+    // Catégories fixes pour Informations Match uniquement
+    const categoriesFixees = ['U15A', 'U15B', 'U18', 'séniors A', 'séniors B', 'vétérans'];
+
     let joueursParCategorie = {};
 
     function setMessage(type, text) {
@@ -300,7 +303,8 @@
 
       select.innerHTML = '';
 
-      Object.keys(joueursParCategorie).forEach(cat => {
+      // Utiliser les catégories fixes pour Informations Match
+      categoriesFixees.forEach(cat => {
         const option = document.createElement('option');
         option.value = cat;
         option.textContent = cat;
@@ -620,7 +624,7 @@
         document.getElementById('message').innerHTML =
           resultat.success
             ? '<div class="success">✅ Composition envoyée</div>'
-            : '<div class="error">❌ Erreur lors de l’envoi</div>';
+            : '<div class="error">❌ Erreur lors de l'envoi</div>';
 
       } catch (e) {
         console.error(e);
