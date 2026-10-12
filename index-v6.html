@@ -653,7 +653,7 @@
         const joueur = {
           nom: cb.value,
           categorie: cb.dataset.cat,
-          numero: numeroInput ? numeroInput.value : 'Non attribué',
+         numero: numeroInput ? numeroInput.value : '',
           capitaine:
             document.querySelector(
               '.capitaine[value="' + cb.value + '"][data-cat="' + cb.dataset.cat + '"]'
