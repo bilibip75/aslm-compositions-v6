@@ -321,28 +321,28 @@
       }
     }
 
-    function remplirEquipes() {
-      const select = document.getElementById('categorieEquipe');
-      if (!select) return;
+function remplirEquipes() {
+  const select = document.getElementById('categorieEquipe');
+  if (!select) return;
 
-      select.innerHTML = '';
+  select.innerHTML = '';
 
-      const categories = getCategoriesDisponibles();
+  const equipes = [
+    'U15 A',
+    'U15 B',
+    'U18',
+    'Sénior A',
+    'Sénior B',
+    'Vétéran'
+  ];
 
-      if (categories.length === 0) {
-        const option = document.createElement('option');
-        option.textContent = 'Aucune catégorie disponible';
-        option.disabled = true;
-        select.appendChild(option);
-      } else {
-        categories.forEach(cat => {
-          const option = document.createElement('option');
-          option.value = cat;
-          option.textContent = cat;
-          select.appendChild(option);
-        });
-      }
-    }
+  equipes.forEach(equipe => {
+    const option = document.createElement('option');
+    option.value = equipe;
+    option.textContent = equipe;
+    select.appendChild(option);
+  });
+}
 
     function remplirGestionJoueurs() {
       const ajout = document.getElementById('categorieAjout');
