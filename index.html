@@ -200,7 +200,10 @@
       <select id="categorieEquipe"></select>
 
       <label for="dateMatch">Date :</label>
-      <input type="date" id="dateMatch">
+      <input type="date" id="dateMatch" required>
+
+      <label for="adversaireMatch">Adversaire :</label>
+      <input type="text" id="adversaireMatch" placeholder="Nom de l'adversaire" required>
 
       <div class="zone-actions">
         <button type="button" id="btnMaj">🔄 Synchroniser les joueurs</button>
@@ -653,7 +656,7 @@ function remplirEquipes() {
         const joueur = {
           nom: cb.value,
           categorie: cb.dataset.cat,
-         numero: numeroInput ? numeroInput.value : '',
+          numero: numeroInput ? numeroInput.value : '',
           capitaine:
             document.querySelector(
               '.capitaine[value="' + cb.value + '"][data-cat="' + cb.dataset.cat + '"]'
@@ -664,13 +667,27 @@ function remplirEquipes() {
       });
 
       if (joueurs.length === 0) {
-        alert('Sélectionnez au moins un joueur');
+        setMessage('error', '❌ Sélectionnez au moins un joueur.');
+        return;
+      }
+
+      const dateMatch = document.getElementById('dateMatch')?.value.trim();
+      const adversaireMatch = document.getElementById('adversaireMatch')?.value.trim();
+
+      if (!dateMatch) {
+        setMessage('error', '❌ La date du match est obligatoire.');
+        return;
+      }
+
+      if (!adversaireMatch) {
+        setMessage('error', '❌ Le nom de l’adversaire est obligatoire.');
         return;
       }
 
       const donnees = {
         categorieEquipe: document.getElementById('categorieEquipe').value,
-        dateMatch: document.getElementById('dateMatch').value,
+        dateMatch,
+        adversaire: adversaireMatch,
         joueurs
       };
 
@@ -713,4 +730,5 @@ function remplirEquipes() {
   </script>
 </body>
 </html>
+
 
